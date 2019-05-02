@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -18,7 +17,7 @@ public class Dataset
 	/**
 	 * Map to store customer review ID and customer review text
 	 */
-	private Map<Integer, Review> reviewIdToReviewTextMap;
+	private Map<Integer, Review> reviewIdToReviewMap;
 	
 	/**
 	 * Constructor - Initialize map to store customer review ID and
@@ -26,7 +25,7 @@ public class Dataset
 	 */
 	public Dataset()
 	{
-		this.reviewIdToReviewTextMap = new HashMap<Integer, Review>();
+		this.reviewIdToReviewMap = new HashMap<Integer, Review>();
 	}
 
 	/**
@@ -199,18 +198,17 @@ public class Dataset
 	};
 	
 	/**
-	 * Parse the JSON array returned from reading the file and populate 
-	 * {@link #reviewIdToReviewTextMap} with the review_id and 
-	 * review_text.
+	 * Parse the JSON Node returned from reading the file and populate 
+	 * {@link #reviewIdToReviewMap} with data for each restaurant review
 	 * 
-	 * @return reviewIdToReviewTextMap map containing review IDs and 
+	 * @return reviewIdToReviewMap map containing review IDs and 
 	 *         review text
 	 */
 	private Map<Integer, Review> parseJSON(JsonNode jsonNode) 
 	{
-		Map<Integer, Review> reviewIdToReviewTextMap = new HashMap<Integer, Review>();
+		Map<Integer, Review> reviewIdToReviewMap = new HashMap<Integer, Review>();
 		
-		// Extract review IDs and review text field
+		// Convert raw text to internal objects
 		int internalIndex = 0;
 		for (int i = 0; i < jsonNode.size()-1; i++)
 		{
@@ -223,15 +221,18 @@ public class Dataset
 			{
 				continue;
 			}
+			
+			// Clean review text
 			String cleanText = cleanText(text);
 			int stars = node.findValue("stars").asInt();
 			String businessId = node.findValue("business_id").asText();
+			// Build review and populate map
 			Review review = new Review(id, cleanText, stars, businessId);
-			reviewIdToReviewTextMap.put(internalIndex, review);
+			reviewIdToReviewMap.put(internalIndex, review);
 			internalIndex++;
 		}
 
-		return reviewIdToReviewTextMap;
+		return reviewIdToReviewMap;
 	}
 	/**
 	 * Clean up deficiencies in text which could slow down
@@ -252,19 +253,19 @@ public class Dataset
 
 
 	/**
-	 * @return the reviewIdToReviewTextMap
+	 * @return the reviewIdToReviewMap
 	 */
-	public Map<Integer, Review> getReviewIdToReviewTextMap() 
+	public Map<Integer, Review> getReviewIdToReviewMap() 
 	{
-		return reviewIdToReviewTextMap;
+		return reviewIdToReviewMap;
 	}
 
 	/**
-	 * @param reviewIdToReviewTextMap the reviewIdToReviewTextMap to set
+	 * @param reviewIdToReviewMap the reviewIdToReviewMap to set
 	 */
-	public void setReviewIdToReviewTextMap(Map<Integer, Review> reviewIdToReviewTextMap) 
+	public void setReviewIdToReviewMap(Map<Integer, Review> reviewIdToReviewMap) 
 	{
-		this.reviewIdToReviewTextMap = reviewIdToReviewTextMap;
+		this.reviewIdToReviewMap = reviewIdToReviewMap;
 	}
 
 }

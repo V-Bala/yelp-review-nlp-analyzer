@@ -37,7 +37,6 @@ import opennlp.tools.util.ObjectStream;
 import opennlp.tools.util.PlainTextByLineStream;
 import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
-import test.DatasetUTest;
 
 /**
  * 
@@ -49,59 +48,9 @@ public class NLPHelper {
 	private final Logger LOGGER = Logger.getLogger(NLPHelper.class.getSimpleName());
 
 	private final Dataset dataset;
-	private final SentimentNLP sentimentNLP;
-	private final TopicNLP topicNLP;
 	
 	public NLPHelper(Dataset dataset) {
 		this.dataset = dataset;
-		this.sentimentNLP = new SentimentNLP();
-		this.topicNLP = new TopicNLP();
-	}
-	
-	/**
-	 * Primary point of computation in this application. Given a 
-	 * validated dataset, this method will utilize the SentimentNLP and 
-	 * TopicNLP helper classes to classify customer reviews based
-	 * on their sentiment towards a topic. The data will then be 
-	 * aggregated and averaged across all reviews for a particular
-	 * restaurant to produce valuable feedback.
-	 * 
-	 * @return restaurantToNLPScore map of restaurant to customer feedback
-	 * @throws IOException
-	 */
-	public Map<Object, Object> solve() throws IOException 
-	{
-		// 1) Read in raw review text from dataset
-		Map<Integer, Review> reviewIdToReviewTextMap = 
-				dataset.getReviewIdToReviewTextMap();
-		
-		// 2) Tag parts of speech (nouns and adjectives to start)
-		sentenceDetection(reviewIdToReviewTextMap);
-		
-		// 3) Create frequency distribution to identify 
-		//    most frequently occurring nouns (will initially
-		//    represent our topic set).
-		
-		// 3) Named entity recognition
-		// 3A) Categorize review by highest association with 'topic'
-		//     also known as highest frequency nouns which appear in 
-		//     text
-		computeTopicWeights(reviewIdToReviewTextMap);
-		
-		// 4) Deep syntactic parsing
-		// 4A) Conduct sentiment analysis using OpenNLP (DoccatModel)
-		//     and Naive Bayes Classifier algorithm to identify
-		//     the magnitude of the review towards the associated topic
-		//     (positive, negative, or neutral)
-//		classifyText(reviewIdToReviewTextMap);
-		
-		// 5) Annotated structured text
-		// 5A) Tag each review with its' score (sentiment strength
-		//     and topic)
-		
-		// 6) Aggregate scores and average results across each individual restaurant
-		Map<Object, Object> restaurantToNLPScore = matchReviewsToRestaurant();
-		return restaurantToNLPScore;
 	}
 	
 	/**
@@ -266,26 +215,6 @@ public class NLPHelper {
 		return reviewToEntityMap;
 	}
 
-	/**
-	 * Determine the topic associated with a review by taking the most frequently occuring
-	 * nound with the highest probability.
-	 * 
-	 * @param reviewToEntityMap
-	 * @return
-	 */
-	public Map<Review, String> runTopicCategorization(Map<Review, List<List<Span>>> reviewToEntityMap) 
-	{
-		Map<Review, String> reviewToTopicMap = new HashMap<Review, String>();
-
-		Map<String, Integer> wordToFrequencyMap = computeWordFrequencyMatrix(reviewToEntityMap);
-		for (String word : wordToFrequencyMap.keySet())
-		{
-			int count = wordToFrequencyMap.get(word);
-		}
-		
-		return reviewToTopicMap;
-	}
-	
 	/**
 	 * 
 	 * @param reviewToEntityMap
@@ -458,30 +387,6 @@ public class NLPHelper {
 	}
 	
 	/**
-	 * Average results across each individual restaurant and
-	 * store sentiment score and topic match. Aggregate results
-	 * to determine: "What  people like or dislike about the 
-	 * restaurant?"
-	 * 
-	 * @return restaurantToNLPScore map containing the restaurant and
-	 * a summary of the sentiment analysis 
-	 */
-	private Map<Object, Object> matchReviewsToRestaurant() 
-	{ 		
-		// TODO Key will be the restaurant, value is the score which contains details
-		// from the customer feedback analysis for the restaurant
-		Map<Object, Object> restaurantToNLPScore = new HashMap<Object, Object>();
-		return restaurantToNLPScore;
-	}
-	
-	
-	private void computeTopicWeights(Map<Integer, Review> reviewIdToReviewTextMap) 
-	{
-		// TODO Auto-generated method stub
-		
-	}
-
-	/**
 	 * @return the dataset
 	 */
 	public Dataset getDataset() 
@@ -490,28 +395,20 @@ public class NLPHelper {
 	}
 
 	/**
-	 * @return the sentimentNLP
+	 * Tag nouns in the review text and return a list of Reviews with
+	 * text set to the defined features (i.e. nouns)
+	 * 
+	 * @param reviewsMap map of reviews
+	 * @param pathToPOSModelFile path to opennlp pos model file
+	 * @return nounsReviewsList list of reviews with features as text
+	 * @throws IOException
 	 */
-	public SentimentNLP getSentimentNLP() 
-	{
-		return sentimentNLP;
-	}
-
-	/**
-	 * @return the topicNLP
-	 */
-	public TopicNLP getTopicNLP() 
-	{
-		return topicNLP;
-	}
-
 	public List<Review> tagNounsInReviewList(Map<Integer, Review> reviewsMap, String pathToPOSModelFile) throws IOException 
 	{
-		// Initialize return object which stores the type of model to the list of span objects
-		// containing references to named entities
+		// Return object with review text cleaned
 		List<Review> nounsReviewsList = new ArrayList<Review>();
 		
-		// Load entity models
+		// Load entity model for parts-of-speech
 		File file = new File(pathToPOSModelFile);
 		InputStream model = new FileInputStream(file);
 	    POSModel posModel = new POSModel(model);
@@ -528,23 +425,22 @@ public class NLPHelper {
 	    	{
 	    		if (tagged[i].equalsIgnoreCase("nn"))
 	    		{
-	    			// ONLY SAVE NOUNS AND ADD TO REVIEW TEXT
+	    			// Only retain nouns in the review text
 	    			sb.append(tokens[i] + " ");
 	    		}
 	    	}
 	    	
+	    	// Review text becomes features for model
 			review.text = sb.toString();
 			
 			// Clear StringBuilder for the next review
 			sb.setLength(0);
-			
 	    	nounsReviewsList.add(review);
 	    	
 	    	if (nounsReviewsList.isEmpty())
 	    	{
 	    		LOGGER.info("Error no nouns found for any reviews in system!");
 	    	}
-
 	    }
 
 	    return nounsReviewsList;
@@ -621,14 +517,46 @@ public class NLPHelper {
 		return reviewToTopicMap;
 	}
 
-	public List<ReviewResult> summarizeResults(Map<Review, String> reviewToTopicMap, Map<Review, Integer> scores) {
+	public List<ReviewResult> summarizeResults(Map<Review, String> reviewToTopicMap, Map<Review, Integer> scores) 
+	{
+		Map<String, List<Review>> businessToReviewListMap = new HashMap<String, List<Review>>();
 		
 		List<ReviewResult> reviewResults = new ArrayList<ReviewResult>();
 		for (Review review : scores.keySet())
 		{
 			// Get the score
 			// Get the topic
-			reviewResults.add(new ReviewResult(review, scores.get(review), reviewToTopicMap.get(review)));
+			if (!businessToReviewListMap.containsKey(review.businessId))
+			{
+				// Add new review
+				List<Review> reviewList = new ArrayList<Review>();
+				reviewList.add(review);
+				businessToReviewListMap.put(review.businessId, reviewList);
+			}
+			else
+			{
+				// Map business ID to list of reviews
+				businessToReviewListMap.get(review.businessId).add(review);
+				
+			}
+		}
+		
+		// Get the business ID and the reviews for that business
+		for (String businessId : businessToReviewListMap.keySet())
+		{
+			List<Review> reviewsForBusiness = businessToReviewListMap.get(businessId);
+			for (Review review : reviewsForBusiness)
+			{
+				// Score and topic do not exist
+				if (!scores.containsKey(review))
+				{
+					break;
+				}
+				
+				 // Otherwise get the score and the topic
+				ReviewResult result = new ReviewResult(review, scores.get(review), reviewToTopicMap.get(review));
+				reviewResults.add(result);
+			}
 		}
 		
 		return reviewResults;
