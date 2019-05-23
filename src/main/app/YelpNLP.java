@@ -15,9 +15,9 @@ import main.model.ReviewResult;
 import opennlp.tools.doccat.DocumentCategorizer;
 
 /**
- * Main class.
+ * YelpNLP application
  * 
- * @author Vijay
+ * @author vbala
  *
  */
 public class YelpNLP 
@@ -36,7 +36,7 @@ public class YelpNLP
 	{
 		// Initialize core objects
 		dataset = new Dataset();
-		nlpHelper = new NLPHelper(dataset);		
+		nlpHelper = new NLPHelper();		
 		}
 
 	/**

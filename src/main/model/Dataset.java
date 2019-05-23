@@ -12,6 +12,12 @@ import java.util.Scanner;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Represents YELP review data
+ * 
+ * @author vbala
+ *
+ */
 public class Dataset 
 {
 	/**
@@ -29,11 +35,12 @@ public class Dataset
 	}
 
 	/**
-	 * |
-	 * @param tEST_DATA_FILE
-	 * @param sentences
-	 * @param asList
-	 * @throws IOException 
+	 * Create the test data file
+	 * 
+	 * @param pathToFile
+	 * @param pathToOutputFile
+	 * @param reviewLimit
+	 * @throws IOException
 	 */
 	public void createTestDataFile(
 			String pathToFile,
@@ -94,10 +101,10 @@ public class Dataset
 	}
 
 	/**
+	 * Create training data file
 	 * 
-	 * @param pathToFile
 	 * @param pathToOutputFile
-	 * @param sentences 
+	 * @param reviews
 	 * @throws IOException
 	 */
 	public void createTrainingDataFile(
@@ -126,9 +133,11 @@ public class Dataset
 	}
 	
 	/**
-	 * Read file, and write N lines to text file
+	 * Stream the file and output to path
+	 * 
 	 * @param pathToFile
-	 * @param reviewLimit 
+	 * @param pathToOutputFile
+	 * @param reviewLimit
 	 * @throws IOException
 	 */
 	public void streamFile(String pathToFile, String pathToOutputFile, int reviewLimit) throws IOException
@@ -180,7 +189,7 @@ public class Dataset
 	/**
 	 * Read a JSON file into memory and store review data.
 	 * 
-	 * @param fileName pointer to JSON file containing customer review
+	 * @param pathToFile pointer to JSON file containing customer review
 	 * 		  data
 	 * @return 
 	 * @throws IOException error opening file
@@ -249,8 +258,6 @@ public class Dataset
 		cleaned = cleaned.replace("\n", " ");
 		return cleaned;
 	}
-
-
 
 	/**
 	 * @return the reviewIdToReviewMap

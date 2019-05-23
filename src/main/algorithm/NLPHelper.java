@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import main.model.Dataset;
 import main.model.Review;
 import main.model.ReviewResult;
 import main.model.Topic;
@@ -39,27 +38,23 @@ import opennlp.tools.util.Span;
 import opennlp.tools.util.TrainingParameters;
 
 /**
+ * Helper class which performs all the NLP tasks
+ * for this application.
  * 
- * @author vijay.bala
+ * @author vbala
  *
  */
-public class NLPHelper {
+public class NLPHelper 
+{
 	
 	private final Logger LOGGER = Logger.getLogger(NLPHelper.class.getSimpleName());
-
-	private final Dataset dataset;
-	
-	public NLPHelper(Dataset dataset) {
-		this.dataset = dataset;
-	}
 	
 	/**
-	 * Classify the sentiment of the review text by using the OpenNLP 
-	 * tool suite. We must first construct a model using the raw review text 
+	 * Predict the sentiment of the review text using the DocumentCategorizer
+	 * and the trained model.
 	 * 
-	 * Currently this method is simplified to show initial implementation.
-	 * The review magnitude will ultimately be stored for later analysis but 
-	 * this example just logs the result to the console.
+	 * @param categorizer {@link DocumentCategorizer}
+	 * @param reviews map containing the test review data
 	 * 
 	 * @throws IOException 
 	 */
@@ -109,11 +104,12 @@ public class NLPHelper {
 	}	
 
 	/**
-	 * Tag parts of speech in a review using parts of speech tagger and chunking
+	 * Tokenize text and tag parts of speech (nouns) for each review.
+	 * This helps narrow down the solution space for determining the topic.
 	 * 
-	 * @param scores
+	 * @param reviewToScoreMap
 	 * @param entityModelPath
-	 * @return
+	 * @return reviewToPartsOfSpeechMap
 	 * @throws IOException
 	 */
 	public Map<Review, List<String>> tagPartsOfSpeech(
@@ -153,12 +149,12 @@ public class NLPHelper {
 	
 	/**
 	 * Determine the entities associated with a review using tokenization
-	 * and named entity recognition.
-	 * 
-	 * NAMED ENTITY RECOGNITION - Find entities including people, locations,
-	 * and organizations
+	 * and named entity recognition. This method returns a review object
+	 * mapped to the topic options for it.
 	 * 
 	 * @param reviewsToScoreMap map of reviews to the sentiment score
+	 * @param entityModelsToLoad
+	 * 
 	 * @throws IOException 
 	 */
 	public Map<Review, List<List<Span>>> runEntityRecognition(
@@ -177,7 +173,6 @@ public class NLPHelper {
 			{
 				break;
 			}
-			System.out.println("Review " + count);
 			// Load entity models
 			for (String pathToModelFile : entityModelsToLoad)
 			{
@@ -214,78 +209,9 @@ public class NLPHelper {
 		
 		return reviewToEntityMap;
 	}
-
+	
 	/**
-	 * 
-	 * @param reviewToEntityMap
-	 * @return
-	 */
-	public Map<String, Integer> computeWordFrequencyMatrix(Map<Review, List<List<Span>>> reviewToEntityMap) 
-	{		
-		Map<String, Integer> wordToFrequencyCount = new HashMap<String, Integer>();
-		
-		for (Review review : reviewToEntityMap.keySet())
-		{
-			double minScore = 0.8;
-			String topic = "";
-					
-			List<List<Span>> spansList = reviewToEntityMap.get(review);
-			for (int i = 0; i < spansList.size(); i++)
-			{
-				// Print span
-				for (Span s : spansList.get(i))
-				{
-					if (s.getProb() >= minScore)
-					{
-						String finalText = getTokens(review)[s.getStart()];
-						String[] chunks = finalText.split(" ");
-						storeFrequencyOfWord(wordToFrequencyCount, chunks);
-					}
-				}
-			}
-		}
-		
-		return wordToFrequencyCount;
-	}
-
-	private void storeFrequencyOfWord(Map<String, Integer> wordToFrequencyCount, String[] chunks) 
-	{
-		for (int i = 0; i < chunks.length; i++)
-		{
-			if (wordToFrequencyCount.containsKey(chunks[i]))
-			{
-				int count = wordToFrequencyCount.get(chunks[i]);
-				count++;
-				wordToFrequencyCount.put(chunks[i], count);
-			}
-			else
-			{
-				wordToFrequencyCount.put(chunks[i], 0);
-			}
-		}
-		
-	}
-
-	/**
-	 * TOKENIZATION - Break down sentences from review text into parts
-	 * 
-	 * @param review
-	 * @param reviewToTextStringArrayMap 
-	 * @return
-	 */
-	public String[] getTokensFromMap(Review review, Map<Review, List<String>> reviewToTextStringArrayMap) 
-	{
-		List<String> listOfStrings = reviewToTextStringArrayMap.get(review);
-		String joined = String.join(" ", listOfStrings);
-		
-		// Tokenize review text
-		SimpleTokenizer tokenizer = SimpleTokenizer.INSTANCE;
-		String[] tokens = tokenizer.tokenize(joined);
-		return tokens;
-	}
-
-	/**
-	 * TOKENIZATION - Break down sentences from review text into parts
+	 * Tokenization - Break down sentences from review text into separate parts
 	 * 
 	 * @param review
 	 * @return
@@ -335,63 +261,6 @@ public class NLPHelper {
 		
 		return resultSentences;
 
-	}
-	
-	/**
-	 * Classify the sentiment of the review text by using the OpenNLP 
-	 * tool suite. We must first construct a model using the raw review text 
-	 * 
-	 * Currently this method is simplified to show initial implementation.
-	 * The review magnitude will ultimately be stored for later analysis but 
-	 * this example just logs the result to the console.
-	 * 
-	 * @throws IOException 
-	 */
-	public Map<Review, Integer> classifyText(String pathToTrainingFile, Map<Integer, Review> reviews) throws IOException 
-	{
-		Map<Review, Integer> reviewToCategoryMap = new HashMap<Review, Integer>();
-		InputStreamFactory dataIn = new MarkableFileInputStreamFactory(new File(pathToTrainingFile));
-		ObjectStream<String> lineStream = new PlainTextByLineStream(dataIn, "UTF-8");
-		ObjectStream<DocumentSample> sampleStream = new DocumentSampleStream(lineStream);
-		TrainingParameters params = new TrainingParameters();
-		params.put(TrainingParameters.ITERATIONS_PARAM, 20+"");
-		params.put(TrainingParameters.CUTOFF_PARAM, 0+"");
-		DoccatModel model = DocumentCategorizerME.train("en", sampleStream, params, new DoccatFactory());
-		BufferedOutputStream modelOut = new BufferedOutputStream(new FileOutputStream(new File("C:/Users/Vijay/yelp-dataset/review-train_500.bin")));
-		model.serialize(modelOut);
-		DocumentCategorizer categorizer = new DocumentCategorizerME(model);
-		
-		// Retrieve the categorization results
-		for (Integer id : reviews.keySet())
-		{
-			String text = reviews.get(id).text;
-			double[] outcomes = categorizer.categorize(text.split(" "));
-			String category = categorizer.getBestCategory(outcomes);
-//			System.out.println(category);
-			// Log to console
-			if (category.equalsIgnoreCase("5")){
-//				System.out.print("The text is positive!");
-			} else if (category.contentEquals("1")){
-//				System.out.print("The text is negative!");
-			}
-			else 
-			{
-//				System.out.print("The text is neutral");
-			}
-			
-//			System.out.println();
-			reviewToCategoryMap.put(reviews.get(id), Integer.parseInt(category));
-		}
-		
-		return reviewToCategoryMap;
-	}
-	
-	/**
-	 * @return the dataset
-	 */
-	public Dataset getDataset() 
-	{
-		return dataset;
 	}
 
 	/**
@@ -494,7 +363,6 @@ public class NLPHelper {
 					topic = word;
 					break;
 				}
-				// TODO instead of just grabbing one, grab the top 3 words for multiple topics
 				if (wordFrequencyMap.containsKey(word))
 				{
 					int count = wordFrequencyMap.get(word);
@@ -517,6 +385,13 @@ public class NLPHelper {
 		return reviewToTopicMap;
 	}
 
+	/**
+	 * Summarize the results of topic analysis package into a ReviewResult object
+	 * 
+	 * @param reviewToTopicMap
+	 * @param scores
+	 * @return
+	 */
 	public List<ReviewResult> summarizeResults(Map<Review, String> reviewToTopicMap, Map<Review, Integer> scores) 
 	{
 		Map<String, List<Review>> businessToReviewListMap = new HashMap<String, List<Review>>();

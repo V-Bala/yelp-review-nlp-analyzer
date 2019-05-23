@@ -10,9 +10,14 @@ import java.util.logging.Logger;
 import main.model.Dataset;
 import main.model.Review;
 import main.model.ReviewResult;
-import opennlp.tools.util.Span;
 import test.DatasetUTest;
 
+/**
+ * Utility class with paths to data files and display methods
+ * 
+ * @author vbala
+ *
+ */
 public class YelpUtil 
 {
 	private final static Logger LOGGER = Logger.getLogger(DatasetUTest.class.getSimpleName());
@@ -68,21 +73,20 @@ public class YelpUtil
 	
 	public static void displayWordFrequencyMap(Map<String, Integer> wordFrequencyMap, int DISPLAY_LIMIT) 
 	{
-		Map<String, Integer> map = wordFrequencyMap;
 		LOGGER.info("Display word frequency map...\n");
 		List<Integer> frequencies = new ArrayList<Integer>();
 		for (String word : wordFrequencyMap.keySet())
 		{
 			int count = wordFrequencyMap.get(word);
 			frequencies.add(count);
-//			LOGGER.info(word + " " + count);
+			LOGGER.info(word + " " + count);
 		}
 		
 		Collections.sort(frequencies);
 		
 		int wordLimit = frequencies.size()-7;
 		int index = frequencies.size()-1;
-		List<String> keys = new ArrayList<>();
+		List<String> keys = new ArrayList<String>();
 		while (index > wordLimit)
 		{
 			for (String key : wordFrequencyMap.keySet()) 
@@ -206,12 +210,10 @@ public class YelpUtil
 	 * 
 	 * @throws IOException
 	 */
-//	@Test
 	public void createTestDataFile() throws IOException
 	{
 		Dataset dataset = new Dataset();
 		dataset.streamFile(REVIEW_DATA_FILE, OUTPUT_TEST_FILE_500, 600);
-		Map<Integer, Review> reviews = dataset.readJSON(OUTPUT_TEST_FILE_500);
 	}
 	
 	/**

@@ -53,7 +53,7 @@ public class DatasetUTest
 	public void setup()
 	{
 		dataset = new Dataset();
-		nlpHelper = new NLPHelper(dataset);
+		nlpHelper = new NLPHelper();
 	}
 	
 	public void testTrainingData200Records() throws IOException
