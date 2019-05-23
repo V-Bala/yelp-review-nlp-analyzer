@@ -12,11 +12,11 @@ The system generates two main pieces of information for each review:
 The dataset used in the development of this application is provided by Kaggle and it contains customer review data for hundreds of businesses across a wide array of metropolitan areas.
 
 ## Example Analysis
-Here are some inferences that can be made based on the system results:
-•	“Emerald Chinese Restaurant received extremely positive feedback related to their food.”
-•	“Sushi Sushi received positive feedback related to their food.”
-•	“Paramount Fine Foods received extremely positive feedback related to their service.”
-•	“Impressionz received extremely negative feedback related to their service.”
+Here are some inferences that can be made based on the system results:  
+•	“Emerald Chinese Restaurant received extremely positive feedback related to their food.”  
+•	“Sushi Sushi received positive feedback related to their food.”  
+•	“Paramount Fine Foods received extremely positive feedback related to their service.”  
+•	“Impressionz received extremely negative feedback related to their service.”  
 
 ## Build and Run
 ```
