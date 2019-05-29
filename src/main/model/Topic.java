@@ -3,8 +3,7 @@ package main.model;
 import java.util.Arrays;
 import java.util.List;
 
-public class Topic 
-{
+public class Topic {
 	// TODO Use word frequency matrix to predefine categories
 	// FOOD
 	// SERVICE
@@ -24,8 +23,7 @@ public class Topic
 	private static String STAFF = "staff";
 //	private static String SCENE = "scene";
 //	private static String EXPERIENCE = "experience";
-	
-	public static List<String> TOPICS = 
-			Arrays.asList(FOOD, SERVICE, ATMOSPHERE, VIBE, STAFF);
+
+	public static List<String> TOPICS = Arrays.asList(FOOD, SERVICE, ATMOSPHERE, VIBE, STAFF);
 
 }

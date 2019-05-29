@@ -1,13 +1,12 @@
 package main.model;
 
 public class ReviewResult {
-	
+
 	private Review review;
 	private int score;
 	private String topic;
 
-	public ReviewResult(Review review, int score, String topic) 
-	{	
+	public ReviewResult(Review review, int score, String topic) {
 		this.review = review;
 		this.score = score;
 		this.topic = topic;
@@ -26,16 +25,14 @@ public class ReviewResult {
 	public void setScore(int score) {
 		this.score = score;
 	}
-	
+
 	public String getTopic() {
 		return topic;
 	}
-	
-	public void setTopic(String topic)
-	{
+
+	public void setTopic(String topic) {
 		this.topic = topic;
 	}
-
 
 	/**
 	 * @return the review
@@ -51,14 +48,16 @@ public class ReviewResult {
 		this.review = review;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("ReviewResult [review=").append(review.toString()).append(", SCORE=").append(score).append(", TOPIC=")
-				.append(topic).append("]");
+		builder.append("ReviewResult [review=").append(review.toString()).append(", SCORE=").append(score)
+				.append(", TOPIC=").append(topic).append("]");
 		return builder.toString();
 	}
 
