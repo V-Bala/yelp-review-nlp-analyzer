@@ -1,7 +1,7 @@
 # Analysis of Restaurant Reviews using NLP
 
 ## Overview
-The application analyzes restaurant reviews on Yelp to determine the main topics for positive and negative customer feedback. The application consumes the restaurant review data and runs it through a textual analytics pipeline which internally uses Natural Language Processing and a Naïve Bayes Classifier.  
+Java and Maven App that analyzes restaurant reviews on Yelp to determine the main topics for positive and negative customer feedback. The application consumes the restaurant review data and runs it through a textual analytics pipeline which internally uses Natural Language Processing and a Naïve Bayes Classifier.  
 
 The system generates two main pieces of information for each review:  
 
